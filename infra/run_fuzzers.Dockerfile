@@ -16,7 +16,15 @@
 # Docker image for running fuzzers on CIFuzz (the run_fuzzers action on GitHub
 # actions).
 
+FROM ghcr.io/sjors/clusterfuzzlite-build-fuzzers:llvm-22-debug AS llvm-tools
+RUN echo "Using llvm tools from ghcr.io/sjors/clusterfuzzlite-build-fuzzers:llvm-22-debug"
+
 FROM gcr.io/oss-fuzz-base/cifuzz-base:metzman-test
+
+# Override the LLVM tools with the versions from the llvm-22 debug builder image.
+COPY --from=llvm-tools /usr/local/bin/llvm-cov /usr/local/bin/llvm-cov
+COPY --from=llvm-tools /usr/local/bin/llvm-profdata /usr/local/bin/llvm-profdata
+COPY --from=llvm-tools /usr/local/bin/llvm-symbolizer /usr/local/bin/llvm-symbolizer
 
 # Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
